@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# chkNew pid [ time ] - check PID was NOT broadcast before time
-#                       (time is in getPids format: yyyy/mm/dd-hh:mm)
+# chkNew [url]/pid [ time ] - check PID was NOT broadcast before time
+#                             (time is in getPids format: yyyy/mm/dd-hh:mm)
 #
-#                       returns 0 for a new programme
+#                             returns 0 for a new programme
 #
-# Sun Oct 21 16:50:02 BST 2018
+# Sun Oct 21 19:18:02 BST 2018
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -55,6 +55,10 @@ Examples
    Friday 16:30 - BBC Radio 4
    $ chkNew b092m9j6
    Tue 5 Sep 2017 11:30 - BBC Radio 4
+   $ chkNew https://www.bbc.co.uk/programmes/b080t87y
+   Tue 1 Nov 2016 14:15 - BBC Radio 4
+   $ echo $?
+   6
    $
 
 Bugs
@@ -67,7 +71,7 @@ ______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________
 # usage - display usage message
 #
 usage(){
-  echo "Usage: $NAME pid [ yyyy/mm/dd-hh:mm ]" >&2
+  echo "Usage: $NAME [url/]pid [ yyyy/mm/dd-hh:mm ]" >&2
   exit 1
 }
 
@@ -117,12 +121,18 @@ case $# in
      ;;
   *) usage
 esac
+case "$pid" in
+  */*)
+     : ;;
+  *)
+     pid="https://www.bbc.co.uk/programmes//$pid"
+esac
 
 mkTmp
 
-wget -O $TMP/pid -q https://www.bbc.co.uk/programmes/$pid
+wget -O $TMP/pid -q $pid
 if [ $? -ne 0 ] ;then
-     echo "$NAME: couldn't get https://www.bbc.co.uk/programmes/$pid" >&2
+     echo "$NAME: couldn't get $pid" >&2
      exit 5
 fi
 sed '/>[ 	]*</s//>\n</g
