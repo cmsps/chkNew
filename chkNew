@@ -1,0 +1,158 @@
+#!/bin/sh
+#
+# chkNew pid [ time ] - check PID was NOT broadcast before time
+#                       (time is in getPids format: yyyy/mm/dd-hh:mm)
+#
+#                       returns 0 for a new programme
+#
+# Sun Oct 21 16:50:02 BST 2018
+#
+<<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
+
+Copyright (C) 2018 Peter Scott - peterscott@pobox.com
+
+Licence
+-------
+   This program is free software: you can redistribute it and / or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Purpose
+-------
+   This script checks that a BBC programme is not a repeat.
+   It works with TV and radio programmes.
+
+Rationale
+---------
+   It is needed because:
+
+      1) the Radio 4 schedule (at least) has dropped nearly all the
+      '(R)' indicators it used to have:
+
+      2) repeats are shown in the "Radio Times" and on the programme's
+      individual web page but are often unflagged in the shedule.
+
+  The date+time format is the same as that displayed by my `getPids'
+  programme.  The idea is that with a date+time from a schedule `chkNew'
+  checks for broadcasts before that date.  Without a date it checks for
+  broadcasts before today.
+
+  Only the first broadcast is shown.  The Beeb usually has them in the
+  correct order so it should be earliest one.
+
+Examples
+--------
+   $ chkNew m0000sdx 2018/10/21-20:00
+   Friday 16:30 - BBC Radio 4
+   $ chkNew b092m9j6
+   Tue 5 Sep 2017 11:30 - BBC Radio 4
+   $
+
+Bugs
+----
+   email: peterscott@pobox.com
+
+______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________
+
+
+# usage - display usage message
+#
+usage(){
+  echo "Usage: $NAME pid [ yyyy/mm/dd-hh:mm ]" >&2
+  exit 1
+}
+
+
+# mkTmp - make temp dir and delete it automatically on exit or failure
+#         Eg: mkTmp; ... > $TMP/temp
+#
+mkTmp(){
+  TMP=/tmp/$NAME.$$
+
+  # Beware of exit from a subshell and losing exit code
+  #
+  trap 'code=$?; rm -fr $TMP 2> /dev/null; exit $code' \
+                              EXIT HUP INT QUIT ILL ABRT BUS FPE SEGV PIPE TERM
+  mkdir $TMP && return
+  echo "$NAME: couldn't make \`$TMP' directory" >&2
+  exit 2
+}
+
+
+# prevent the user giving the script a name containing white space
+# -- saving the hassle of quoting TMP file names
+#
+NAME=`basename "$0"`
+words=`echo "$NAME" | wc -w`
+if [ $words -ne 1 ] ;then
+     echo "\`$NAME': I don't allow white space in command names" >&2
+     exit 3
+fi
+
+case $# in
+  1) pid=$1
+     time=`date '+%s'`
+     ;;
+  2) pid=$1
+     time=$2
+     case $time in
+       [0-9][0-9][0-9][0-9]/[0-9][0-9]/[0-9][0-9]-[0-9][0-9]:[0-9][0-9])
+          time=`echo $time |
+                  sed 's/-/T/
+                       s?/?-?g'`
+          time=`date --date $time '+%s'`
+          ;;
+       *) echo "$NAME: $time isn't yyyy/mm/dd-hh:mm" >&2
+          exit 4
+     esac
+     ;;
+  *) usage
+esac
+
+mkTmp
+
+wget -O $TMP/pid -q https://www.bbc.co.uk/programmes/$pid
+if [ $? -ne 0 ] ;then
+     echo "$NAME: couldn't get https://www.bbc.co.uk/programmes/$pid" >&2
+     exit 5
+fi
+sed '/>[ 	]*</s//>\n</g
+    s/^[	 ][	 ]*//' $TMP/pid |
+  sed -n '/^<\/div>$/d
+          /^<\/a>$/d
+          /^<\/li>$/d
+          /^<h2>Broadcasts<.h2>$/,/^<\/ul>$/p' > $TMP/broadcasts
+
+test -s $TMP/broadcasts || exit 0
+
+sed -n '/^<div class="broadcast-event__time beta"/{
+             N; N; N; N; N; N; N; N; N
+             s/\n//g
+             s/.*content="//
+             s/".*timezone--date">/ /
+             s/<.*timezone--time">/ /
+             s/<.*href[^>]*>/ - /
+             s/<[^<]*>//g
+             s/\&amp;/\&/g
+             p
+        }' $TMP/broadcasts > $TMP/times
+
+# don't use a pipe -- avoiding subshell and loss of exit code
+#
+while read date details ;do
+     broadcast=`date --date $date '+%s'`
+     if [ $broadcast -lt $time ] ;then
+          echo $details
+          exit 6
+     fi
+done < $TMP/times
+exit 0
