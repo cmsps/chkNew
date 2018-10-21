@@ -5,7 +5,7 @@
 #
 #                             returns 0 for a new programme
 #
-# Sun Oct 21 19:18:02 BST 2018
+# Sun Oct 21 19:38:54 BST 2018
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -58,7 +58,10 @@ Examples
    $ chkNew https://www.bbc.co.uk/programmes/b080t87y
    Tue 1 Nov 2016 14:15 - BBC Radio 4
    $ echo $?
-   6
+   6                         # repeat
+   $ chkNew b0bprgc2 
+   $ echo $?
+   0                         # NOT a repeat
    $
 
 Bugs
@@ -125,7 +128,7 @@ case "$pid" in
   */*)
      : ;;
   *)
-     pid="https://www.bbc.co.uk/programmes//$pid"
+     pid="https://www.bbc.co.uk/programmes/$pid"
 esac
 
 mkTmp
