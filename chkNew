@@ -3,9 +3,11 @@
 # chkNew [url]/pid [ time ] - check PID was NOT broadcast before time
 #                             (time is in getPids format: yyyy/mm/dd-hh:mm)
 #
-#                             returns 0 for a new programme
+#                             Returns: 0   new programme
+#                                      1   repeat
+#                                      2-6 problem
 #
-# Sun Oct 21 19:38:54 BST 2018
+# Tue Oct 23 17:30:06 BST 2018
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -58,7 +60,7 @@ Examples
    $ chkNew https://www.bbc.co.uk/programmes/b080t87y
    Tue 1 Nov 2016 14:15 - BBC Radio 4
    $ echo $?
-   6                         # repeat
+   1                         # repeat
    $ chkNew b0bprgc2 
    $ echo $?
    0                         # NOT a repeat
@@ -75,7 +77,7 @@ ______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________
 #
 usage(){
   echo "Usage: $NAME [url/]pid [ yyyy/mm/dd-hh:mm ]" >&2
-  exit 1
+  exit 2
 }
 
 
@@ -91,7 +93,7 @@ mkTmp(){
                               EXIT HUP INT QUIT ILL ABRT BUS FPE SEGV PIPE TERM
   mkdir $TMP && return
   echo "$NAME: couldn't make \`$TMP' directory" >&2
-  exit 2
+  exit 3
 }
 
 
@@ -102,9 +104,11 @@ NAME=`basename "$0"`
 words=`echo "$NAME" | wc -w`
 if [ $words -ne 1 ] ;then
      echo "\`$NAME': I don't allow white space in command names" >&2
-     exit 3
+     exit 4
 fi
 
+# sort out arguments
+#
 case $# in
   1) pid=$1
      time=`date '+%s'`
@@ -119,7 +123,7 @@ case $# in
           time=`date --date $time '+%s'`
           ;;
        *) echo "$NAME: $time isn't yyyy/mm/dd-hh:mm" >&2
-          exit 4
+          exit 5
      esac
      ;;
   *) usage
@@ -133,10 +137,12 @@ esac
 
 mkTmp
 
+# get page, reformat HTML, and extract Broadcasts section (if any)
+#
 wget -O $TMP/pid -q $pid
 if [ $? -ne 0 ] ;then
      echo "$NAME: couldn't get $pid" >&2
-     exit 5
+     exit 6
 fi
 sed '/>[ 	]*</s//>\n</g
     s/^[	 ][	 ]*//' $TMP/pid |
@@ -145,27 +151,35 @@ sed '/>[ 	]*</s//>\n</g
           /^<\/li>$/d
           /^<h2>Broadcasts<.h2>$/,/^<\/ul>$/p' > $TMP/broadcasts
 
+# exit 0 if no Broadcasts section
+#
 test -s $TMP/broadcasts || exit 0
 
+# get individual broadcast times and places
+#
 sed -n '/^<div class="broadcast-event__time beta"/{
              N; N; N; N; N; N; N; N; N
              s/\n//g
              s/.*content="//
-             s/".*timezone--date">/ /
-             s/<.*timezone--time">/ /
-             s/<.*href[^>]*>/ - /
-             s/<[^<]*>//g
+             s/">/ /
+             s/<a href=[^>]*>/- /
+             s/<[^<]*>/ /g
+             s/   */ /g
              s/\&amp;/\&/g
              p
         }' $TMP/broadcasts > $TMP/times
 
-# don't use a pipe -- avoiding subshell and loss of exit code
+# show details and exit 1 for first earlier broadcast found
+# Could have used a pipe (and a subshell) from the previous stage.
 #
 while read date details ;do
      broadcast=`date --date $date '+%s'`
      if [ $broadcast -lt $time ] ;then
           echo $details
-          exit 6
+          exit 1             # won't lose this 'cos not in subshell
      fi
 done < $TMP/times
+
+# indicate not a repeat
+#
 exit 0
