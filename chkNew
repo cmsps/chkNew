@@ -7,7 +7,7 @@
 #                                      1   repeat
 #                                      2-6 problem
 #
-# Tue Oct 23 17:30:06 BST 2018
+# Thu Oct 25 13:58:26 BST 2018
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -170,7 +170,7 @@ sed -n '/^<div class="broadcast-event__time beta"/{
         }' $TMP/broadcasts > $TMP/times
 
 # show details and exit 1 for first earlier broadcast found
-# Could have used a pipe (and a subshell) from the previous stage.
+# Can't use a pipe (and a subshell) from the previous stage.
 #
 while read date details ;do
      broadcast=`date --date $date '+%s'`
