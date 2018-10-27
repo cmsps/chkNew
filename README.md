@@ -3,7 +3,7 @@ Shell script to check if a BBC programme is a repeat
 
 It works with TV and radio programmes.
 
-It is needed because:
+# It is needed because:
 
 1) the Radio 4 schedule (at least) has dropped nearly all the
 '(R)' indicators it used to have:
@@ -11,8 +11,7 @@ It is needed because:
 2) repeats are shown in the "Radio Times" and on the programme's
 individual web page but are often unflagged in the shedule.
 
-Examples
---------
+# Examples
 
 $ chkNew m0000sdx 2018/10/21-20:00  
 Friday 16:30 - BBC Radio 4  
