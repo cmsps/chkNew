@@ -7,7 +7,7 @@
 #                                      1   repeat
 #                                      2-6 problem
 #
-# Thu Oct 25 13:58:26 BST 2018
+# Sun Oct 28 20:00:43 GMT 2018
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -55,12 +55,12 @@ Examples
 --------
    $ chkNew m0000sdx 2018/10/21-20:00
    Friday 16:30 - BBC Radio 4
+   $ echo $?
+   1                         # repeat
    $ chkNew b092m9j6
    Tue 5 Sep 2017 11:30 - BBC Radio 4
    $ chkNew https://www.bbc.co.uk/programmes/b080t87y
    Tue 1 Nov 2016 14:15 - BBC Radio 4
-   $ echo $?
-   1                         # repeat
    $ chkNew b0bprgc2 
    $ echo $?
    0                         # NOT a repeat
@@ -84,11 +84,12 @@ usage(){
 # mkTmp - make temp dir and delete it automatically on exit or failure
 #         Eg: mkTmp; ... > $TMP/temp
 #
+# Be careful not to exit from a subshell and lose an exit code!
+# -------------------------------------------------------------
+#
 mkTmp(){
   TMP=/tmp/$NAME.$$
 
-  # Beware of exit from a subshell and losing exit code
-  #
   trap 'code=$?; rm -fr $TMP 2> /dev/null; exit $code' \
                               EXIT HUP INT QUIT ILL ABRT BUS FPE SEGV PIPE TERM
   mkdir $TMP && return
