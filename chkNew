@@ -1,13 +1,13 @@
 #!/bin/sh
 #
-# chkNew [url]/pid [ time ] - check PID was NOT broadcast before time
+# chkNew [url]/PID [ time ] - check PID was NOT broadcast before time
 #                             (time is in getPids format: yyyy/mm/dd-hh:mm)
 #
 #                             Returns: 0   new programme
 #                                      1   repeat
 #                                      2-6 problem
 #
-# Sun Oct 28 20:00:43 GMT 2018
+# Mon Dec 10 20:10:46 GMT 2018
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -43,13 +43,13 @@ Rationale
       2) repeats are shown in the "Radio Times" and on the programme's
       individual web page but are often unflagged in the shedule.
 
-  The date+time format is the same as that displayed by my `getPids'
-  programme.  The idea is that with a date+time from a schedule `chkNew'
-  checks for broadcasts before that date.  Without a date it checks for
-  broadcasts before today.
+   The date+time format is the same as that displayed by my `getPids'
+   programme.  The idea is that with a date+time from a schedule `chkNew'
+   checks for broadcasts before that date.  Without a date it checks
+   for broadcasts before today.
 
-  Only the first broadcast is shown.  The Beeb usually has them in the
-  correct order so it should be earliest one.
+   Only the first earlier broadcast is shown.  The Beeb usually has them
+   in the correct order so it should be earliest one.
 
 Examples
 --------
@@ -76,7 +76,7 @@ ______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________
 # usage - display usage message
 #
 usage(){
-  echo "Usage: $NAME [url/]pid [ yyyy/mm/dd-hh:mm ]" >&2
+  echo "Usage: $NAME [url/]pid [yyyy/mm/dd-hh:mm]" >&2
   exit 2
 }
 
@@ -90,8 +90,7 @@ usage(){
 mkTmp(){
   TMP=/tmp/$NAME.$$
 
-  trap 'code=$?; rm -fr $TMP 2> /dev/null; exit $code' \
-                              EXIT HUP INT QUIT ILL ABRT BUS FPE SEGV PIPE TERM
+  trap 'code=$?; rm -fr $TMP 2> /dev/null; exit $code' EXIT HUP INT QUIT TERM
   mkdir $TMP && return
   echo "$NAME: couldn't make \`$TMP' directory" >&2
   exit 3
@@ -152,35 +151,43 @@ sed '/>[ 	]*</s//>\n</g
           /^<\/li>$/d
           /^<h2>Broadcasts<.h2>$/,/^<\/ul>$/p' > $TMP/broadcasts
 
-# exit 0 if no Broadcasts section
+# early exit if no Broadcasts section on the page
 #
 test -s $TMP/broadcasts || exit 0
 
-# get individual broadcast times and places
+# look for an earlier broadcast (avoiding a subshell)
 #
-sed -n '/^<div class="broadcast-event__time beta"/{
-             N; N; N; N; N; N; N; N; N
-             s/\n//g
-             s/.*content="//
-             s/">/ /
-             s/<a href=[^>]*>/- /
-             s/<[^<]*>/ /g
-             s/   */ /g
-             s/\&amp;/\&/g
-             p
-        }' $TMP/broadcasts > $TMP/times
+earlier=$(
+  # pass on individual broadcast times and channels
+  #
+  sed -n '/^<div class="broadcast-event__time beta"/{
+                N; N; N; N; N; N; N; N; N
+                s/\n//g
+                s/.*content="//
+                s/">/ /
+                s/<a href=[^>]*>/- /
+                s/<[^<]*>/ /g
+                s/   */ /g
+                s/\&amp;/\&/g
+                p
+           }' $TMP/broadcasts |
 
-# show details and exit 1 for first earlier broadcast found
-# Can't use a pipe (and a subshell) from the previous stage.
-#
-while read date details ;do
-     broadcast=`date --date $date '+%s'`
-     if [ $broadcast -lt $time ] ;then
-          echo $details
-          exit 1             # won't lose this 'cos not in subshell
-     fi
-done < $TMP/times
+    # return details and finish if an earlier broadcast found
+    #
+    while read date details ;do
+         broadcast=`date --date $date '+%s'`
+         if [ $broadcast -lt $time ] ;then
+              echo $details
+              break          # doing exit 1 here would lose the exit code!
+         fi
+    done
+)
 
-# indicate not a repeat
+# indicate repeat or not
 #
-exit 0
+if [ -z "$earlier" ] ;then
+     exit 0
+else
+     echo $earlier
+     exit 1
+fi
