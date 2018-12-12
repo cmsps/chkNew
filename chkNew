@@ -7,7 +7,7 @@
 #                                      1   repeat
 #                                      2-6 problem
 #
-# Mon Dec 10 20:10:46 GMT 2018
+# Wed Dec 12 18:35:56 GMT 2018
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -37,11 +37,11 @@ Rationale
 ---------
    It is needed because:
 
-      1) the Radio 4 schedule (at least) has dropped nearly all the
-      '(R)' indicators it used to have:
+      1) the Beeb has dropped nearly all the '(R)' indicators it used to have
+         in the Radio 4 schedule (at least).
 
       2) repeats are shown in the "Radio Times" and on the programme's
-      individual web page but are often unflagged in the shedule.
+         individual web page but are often unflagged in the shedule.
 
    The date+time format is the same as that displayed by my `getPids'
    programme.  The idea is that with a date+time from a schedule `chkNew'
@@ -155,7 +155,7 @@ sed '/>[ 	]*</s//>\n</g
 #
 test -s $TMP/broadcasts || exit 0
 
-# look for an earlier broadcast (avoiding a subshell)
+# look for an earlier broadcast (avoiding exit from a subshell)
 #
 earlier=$(
   # pass on individual broadcast times and channels
