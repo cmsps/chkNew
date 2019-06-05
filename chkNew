@@ -1,13 +1,20 @@
 #!/bin/sh
 #
-# chkNew [url]/PID [ time ] - check PID was NOT broadcast before time
-#                             (time is in getPids format: yyyy/mm/dd-hh:mm)
+# chkNew [ -s ] [url]/PID [ time ] - check PID was NOT broadcast before time
 #
-#                             Returns: 0   new programme
-#                                      1   repeat
-#                                      2-6 problem
+#    (time is in getPids format: yyyy/mm/dd-hh:mm)
 #
-# Wed Dec 12 18:35:56 GMT 2018
+#    Option:
+#            -s   repeats must be the same channel as the scheduled broadcast
+#
+#    Returns: 0   new programme
+#             1   repeat
+#             2-6 problem
+#
+#    Displays: date of most recent repeat (with the channel if no -s option
+#              or no scheduled broadcast)
+#
+# Wed Jun 5 17:45:40 BST 2019
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -48,8 +55,8 @@ Rationale
    checks for broadcasts before that date.  Without a date it checks
    for broadcasts before today.
 
-   Only the first earlier broadcast is shown.  The Beeb usually has them
-   in the correct order so it should be earliest one.
+   Only the last earlier broadcast is shown.  The Beeb usually has them
+   in the correct order so it should be the latest repeat.
 
 Examples
 --------
@@ -64,6 +71,12 @@ Examples
    $ chkNew b0bprgc2 
    $ echo $?
    0                         # NOT a repeat
+   $ # at the time of writing, b08tj4y1 is scheduled for a broadcast on Radio 4
+   $
+   $ chkNew b08tj4y1
+   Sun 26 May 2019 19:00 - BBC Radio 4 Extra
+   $ chkNew -s b08tj4y1
+   Sun 18 Jun 2017 23:00          # the most recent Radio 4 repeat
    $
 
 Bugs
@@ -76,7 +89,12 @@ ______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________
 # usage - display usage message
 #
 usage(){
-  echo "Usage: $NAME [url/]pid [yyyy/mm/dd-hh:mm]" >&2
+  cat <<-! >&2
+	Usage: $NAME [ -s ] [url/]pid [yyyy/mm/dd-hh:mm]
+
+	Option:
+	       -s   repeats must be the same channel as the scheduled broadcast
+!
   exit 2
 }
 
@@ -106,6 +124,15 @@ if [ $words -ne 1 ] ;then
      echo "\`$NAME': I don't allow white space in command names" >&2
      exit 4
 fi
+
+while getopts ':s' option ;do
+     case $option in
+       s) sameChannel=yes ;;
+      \?) echo "$NAME: bad option -- $OPTARG" >&2
+          usage
+     esac
+done
+shift `expr $OPTIND - 1`
 
 # sort out arguments
 #
@@ -151,13 +178,27 @@ sed '/>[ 	]*</s//>\n</g
           /^<\/li>$/d
           /^<h2>Broadcasts<.h2>$/,/^<\/ul>$/p' > $TMP/broadcasts
 
-# early exit if no Broadcasts section on the page
+# exit early if no Broadcasts section on the page
 #
 test -s $TMP/broadcasts || exit 0
 
+# does the repeat have to be on the same channel as the next scheduled
+# broadcast?
+#
+if [ ! "$sameChannel" ] ;then
+     scheduled=  # no
+else
+     # yes -- get the channel for next scheduled broadcast (if there is one)
+     #
+     scheduled=`sed -n '/<h2>On [rT][aV].*<\/h2>/,/<h[1-9]/{
+                             s?.*<a href=.*">??
+                             s?</a></div>??p
+                }' $TMP/pid`
+fi
+
 # look for an earlier broadcast (avoiding exit from a subshell)
 #
-earlier=$(
+earlier=`
   # pass on individual broadcast times and channels
   #
   sed -n '/^<div class="broadcast-event__time beta"/{
@@ -171,17 +212,31 @@ earlier=$(
                 s/\&amp;/\&/g
                 p
            }' $TMP/broadcasts |
+    tac |
 
-    # return details and finish if an earlier broadcast found
-    #
-    while read date details ;do
-         broadcast=`date --date $date '+%s'`
-         if [ $broadcast -lt $time ] ;then
-              echo $details
-              break          # doing exit 1 here would lose the exit code!
-         fi
-    done
-)
+      # return details and finish if an earlier broadcast found
+      #
+      while read date details ;do
+           broadcast=$(date --date $date '+%s')
+           if [ $broadcast -lt $time ] ;then
+                if [ -z "$scheduled" ] ;then
+                     echo $details
+                     break        # exit 1 here would lose the exit code!
+                else
+                     # look for scheduled channel at end of details
+                     #
+                     case "$details" in
+                        *' - '$scheduled )
+
+                          # matched -- strip scheduled channel from output
+                          #
+                          echo $details |
+                            sed 's/ - .*//'
+                          break        # exit 1 here would lose the exit code!
+                     esac
+                fi
+           fi
+      done`
 
 # indicate repeat or not
 #
