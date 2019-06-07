@@ -1,24 +1,26 @@
 #!/bin/sh
 #
-# chkNew [ -s ] [url]/PID [ time ] - check PID was NOT broadcast before time
+# chkNew [ -s station ] [url]/PID [ time ] - check PID was NOT
+#                                            broadcast before time
 #
-#    (time is in getPids format: yyyy/mm/dd-hh:mm)
+#    Time is in getPids format: yyyy/mm/dd-hh:mm
+#    Station is also as in getPids, eg: bbcone, radio4.
 #
 #    Option:
-#            -s   repeats must be the same channel as the scheduled broadcast
+#            -s   look for repeats only on station
 #
 #    Returns: 0   new programme
 #             1   repeat
 #             2-6 problem
 #
-#    Displays: date of most recent repeat (with the channel if no -s option
-#              or no scheduled broadcast)
+#    Displays:    date of most recent repeat, with the station unless the
+#                 -s option is used.
 #
-# Wed Jun 5 17:45:40 BST 2019
+# Fri Jun 7 18:04:21 BST 2019
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
-Copyright (C) 2018 Peter Scott - peterscott@pobox.com
+Copyright (C) 2019 Peter Scott - peterscott@pobox.com
 
 Licence
 -------
@@ -50,10 +52,8 @@ Rationale
       2) repeats are shown in the "Radio Times" and on the programme's
          individual web page but are often unflagged in the shedule.
 
-   The date+time format is the same as that displayed by my `getPids'
-   programme.  The idea is that with a date+time from a schedule `chkNew'
-   checks for broadcasts before that date.  Without a date it checks
-   for broadcasts before today.
+   With a date+time from a schedule `chkNew' checks for broadcasts before
+   that date.  Without a date it checks for broadcasts before today.
 
    Only the last earlier broadcast is shown.  The Beeb usually has them
    in the correct order so it should be the latest repeat.
@@ -61,22 +61,20 @@ Rationale
 Examples
 --------
    $ chkNew m0000sdx 2018/10/21-20:00
-   Friday 16:30 - BBC Radio 4
+   Fri 19 Oct 2018 16:30 - BBC Radio 4
    $ echo $?
    1                         # repeat
    $ chkNew b092m9j6
-   Tue 5 Sep 2017 11:30 - BBC Radio 4
+   Sat 20 Oct 2018 15:30 - BBC Radio 4
    $ chkNew https://www.bbc.co.uk/programmes/b080t87y
-   Tue 1 Nov 2016 14:15 - BBC Radio 4
+   Fri 19 Oct 2018 14:15 - BBC Radio 4
    $ chkNew b0bprgc2 
    $ echo $?
    0                         # NOT a repeat
-   $ # at the time of writing, b08tj4y1 is scheduled for a broadcast on Radio 4
-   $
    $ chkNew b08tj4y1
    Sun 26 May 2019 19:00 - BBC Radio 4 Extra
-   $ chkNew -s b08tj4y1
-   Sun 18 Jun 2017 23:00          # the most recent Radio 4 repeat
+   $ chkNew2 -s radio4 b08tj4y1
+   Sun 18 Jun 2017 23:00
    $
 
 Bugs
@@ -90,10 +88,10 @@ ______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________
 #
 usage(){
   cat <<-! >&2
-	Usage: $NAME [ -s ] [url/]pid [yyyy/mm/dd-hh:mm]
+	Usage: $NAME [ -s station ] [url/]pid [yyyy/mm/dd-hh:mm]
 
 	Option:
-	       -s   repeats must be the same channel as the scheduled broadcast
+	       -s   look for repeats only on station
 !
   exit 2
 }
@@ -125,9 +123,12 @@ if [ $words -ne 1 ] ;then
      exit 4
 fi
 
-while getopts ':s' option ;do
+# check for option
+#
+while getopts ':s:' option ;do
      case $option in
-       s) sameChannel=yes ;;
+       s) station=$OPTARG ;;
+       :) echo "$NAME: option \`$OPTARG' requires a station" >&2 ;;
       \?) echo "$NAME: bad option -- $OPTARG" >&2
           usage
      esac
@@ -171,72 +172,47 @@ if [ $? -ne 0 ] ;then
      echo "$NAME: couldn't get $pid" >&2
      exit 6
 fi
-sed '/>[ 	]*</s//>\n</g
-    s/^[	 ][	 ]*//' $TMP/pid |
-  sed -n '/^<\/div>$/d
-          /^<\/a>$/d
-          /^<\/li>$/d
-          /^<h2>Broadcasts<.h2>$/,/^<\/ul>$/p' > $TMP/broadcasts
+sed -n 's/^[	 ][	 ]*//
+        />[ 	]*</s//>\n</g
+        /^<h2>Broadcasts<.h2>$/,/^<\/ul>$/p' $TMP/pid > $TMP/broadcasts
 
-# exit early if no Broadcasts section on the page
+# exit early if no Broadcasts section
 #
 test -s $TMP/broadcasts || exit 0
 
-# does the repeat have to be on the same channel as the next scheduled
-# broadcast?
-#
-if [ ! "$sameChannel" ] ;then
-     scheduled=  # no
-else
-     # yes -- get the channel for next scheduled broadcast (if there is one)
-     #
-     scheduled=`sed -n '/<h2>On [rT][aV].*<\/h2>/,/<h[1-9]/{
-                             s?.*<a href=.*">??
-                             s?</a></div>??p
-                }' $TMP/pid`
-fi
-
 # look for an earlier broadcast (avoiding exit from a subshell)
 #
-earlier=`
+earlier=$(
   # pass on individual broadcast times and channels
   #
   sed -n '/^<div class="broadcast-event__time beta"/{
                 N; N; N; N; N; N; N; N; N
                 s/\n//g
                 s/.*content="//
+                s/">.*subtle">/ /
+                s?<a href=.*bbc.co.uk/??
                 s/">/ /
-                s/<a href=[^>]*>/- /
-                s/<[^<]*>/ /g
-                s/   */ /g
-                s/\&amp;/\&/g
+                s?</a>? ?
                 p
            }' $TMP/broadcasts |
     tac |
 
       # return details and finish if an earlier broadcast found
       #
-      while read date details ;do
-           broadcast=$(date --date $date '+%s')
-           if [ $broadcast -lt $time ] ;then
-                if [ -z "$scheduled" ] ;then
-                     echo $details
+      while read date broadcastStation details ;do
+           broadcastTime=$(date --date $date '+%s')
+           if [ $broadcastTime -lt $time ] ;then
+                displayDate=$(date --date $date '+%a %d %b %Y %R')
+                if [ -z "$station" ] ;then
+                     echo "$displayDate - $details"
                      break        # exit 1 here would lose the exit code!
-                else
-                     # look for scheduled channel at end of details
-                     #
-                     case "$details" in
-                        *' - '$scheduled )
-
-                          # matched -- strip scheduled channel from output
-                          #
-                          echo $details |
-                            sed 's/ - .*//'
-                          break        # exit 1 here would lose the exit code!
-                     esac
+                elif [ $broadcastStation = $station ] ;then
+                     echo $displayDate
+                     break        # exit 1 here would lose the exit code!
                 fi
            fi
-      done`
+      done
+)
 
 # indicate repeat or not
 #
