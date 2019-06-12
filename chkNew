@@ -16,7 +16,7 @@
 #    Displays:    date of most recent repeat, with the station unless the
 #                 -s option is used.
 #
-# Fri Jun 7 18:04:21 BST 2019
+# Wed Jun 12 11:55:09 BST 2019
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -46,8 +46,8 @@ Rationale
 ---------
    It is needed because:
 
-      1) the Beeb has dropped nearly all the '(R)' indicators it used to have
-         in the Radio 4 schedule (at least).
+      1) at one stage, the Beeb has dropped nearly all the '(R)'
+         indicators it used to have in the Radio 4 schedule.
 
       2) repeats are shown in the "Radio Times" and on the programme's
          individual web page but are often unflagged in the shedule.
@@ -56,7 +56,7 @@ Rationale
    that date.  Without a date it checks for broadcasts before today.
 
    Only the last earlier broadcast is shown.  The Beeb usually has them
-   in the correct order so it should be the latest repeat.
+   in the correct order so it should be the most recent repeat.
 
 Examples
 --------
@@ -73,7 +73,7 @@ Examples
    0                         # NOT a repeat
    $ chkNew b08tj4y1
    Sun 26 May 2019 19:00 - BBC Radio 4 Extra
-   $ chkNew2 -s radio4 b08tj4y1
+   $ chkNew -s radio4 b08tj4y1
    Sun 18 Jun 2017 23:00
    $
 
