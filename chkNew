@@ -16,7 +16,7 @@
 #    Displays:    date of most recent repeat, with the station unless the
 #                 -s option is used.
 #
-# Wed Jun 12 11:55:09 BST 2019
+# Mon Jul 8 16:37:41 BST 2019
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -189,8 +189,8 @@ earlier=$(
                 N; N; N; N; N; N; N; N; N
                 s/\n//g
                 s/.*content="//
-                s/">.*subtle">/ /
-                s?<a href=.*bbc.co.uk/??
+                s/">.*subtle">//
+                s?<a href="/? ?
                 s/">/ /
                 s?</a>? ?
                 p
