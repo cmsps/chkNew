@@ -2,6 +2,7 @@
 #
 # chkNew [ -s station ] [url]/PID [ time ] - check PID was NOT
 #                                            broadcast before time
+# Wed Jul 17 18:05:17 BST 2019
 #
 #    Time is in getPids format: yyyy/mm/dd-hh:mm
 #    Station is also as in getPids, eg: bbcone, radio4.
@@ -11,12 +12,10 @@
 #
 #    Returns: 0   new programme
 #             1   repeat
-#             2-6 problem
+#             2+  problem
 #
 #    Displays:    date of most recent repeat, with the station unless the
 #                 -s option is used.
-#
-# Mon Jul 8 16:37:41 BST 2019
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -127,9 +126,17 @@ fi
 #
 while getopts ':s:' option ;do
      case $option in
-       s) station=$OPTARG ;;
-       :) echo "$NAME: option \`$OPTARG' requires a station" >&2 ;;
-      \?) echo "$NAME: bad option -- $OPTARG" >&2
+       s) station=$OPTARG
+          case $station in
+            -*) echo "$NAME: $station: station can't begin with dash" >&2
+                exit 5
+                ;;
+            ?) echo "$NAME: $station: station can't be only one letter" >&2
+                exit 6
+          esac
+          ;;
+       :) echo "$NAME: option \`-$OPTARG' requires a station" >&2 ;;
+      \?) echo "$NAME: bad option: -$OPTARG" >&2
           usage
      esac
 done
@@ -151,7 +158,7 @@ case $# in
           time=`date --date $time '+%s'`
           ;;
        *) echo "$NAME: $time isn't yyyy/mm/dd-hh:mm" >&2
-          exit 5
+          exit 7
      esac
      ;;
   *) usage
@@ -170,7 +177,7 @@ mkTmp
 wget -O $TMP/pid -q $pid
 if [ $? -ne 0 ] ;then
      echo "$NAME: couldn't get $pid" >&2
-     exit 6
+     exit 8
 fi
 sed -n 's/^[	 ][	 ]*//
         />[ 	]*</s//>\n</g
