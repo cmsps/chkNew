@@ -1,9 +1,9 @@
 # chkNew
-Shell script to check if a BBC programme is a repeat
+Shell _and_ Python scripts to check if a BBC programme is a repeat
 
-It works with TV and radio programmes.
+They work with TV and radio programmes.
 
-## It is needed because:
+## They are needed because:
 
 1. the Radio 4 schedule (at least) has dropped nearly all the '(R)' indicators it used to have:
 
