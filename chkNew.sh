@@ -2,8 +2,6 @@
 #
 # chkNew [ -s station ] [url]/PID [ time ] - check PID was NOT
 #                                            broadcast before time
-# Wed Jul 17 18:05:17 BST 2019
-#
 #    Time is in getPids format: yyyy/mm/dd-hh:mm
 #    Station is also as in getPids, eg: bbcone, radio4.
 #
@@ -16,6 +14,8 @@
 #
 #    Displays:    date of most recent repeat, with the station unless the
 #                 -s option is used.
+#
+# Sun Jul 21 14:15:13 BST 2019
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 

@@ -1,6 +1,89 @@
 #!/usr/bin/env python
+'''
+  chkNew [ -s station ] [url]/PID [ time ] - check PID was NOT
+                                             broadcast before time
+  Time is in getPids format: yyyy/mm/dd-hh:mm
+  Station is also as in getPids, eg: bbcone, radio4.
+ 
+  Option:
+          -s   look for repeats only on station
+ 
+  Returns: 0   new programme
+           1   repeat
+           2+  problem
+ 
+  Displays:    date of most recent repeat, with the station unless the
+               -s option is used.
+ 
+  Version
+  -------
+     Mon Jul 22 12:17:47 BST 2019
+ 
+  Copyright
+  ---------
+     Copyright (C) 2019 Peter Scott - peterscott@pobox.com
 
-import six, requests, re, sys, os, string, getopt, argparse
+  Licence
+  -------
+     This program is free software: you can redistribute it and / or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+  Purpose
+  -------
+     This script checks that a BBC programme is not a repeat.
+     It works with TV and radio programmes.
+
+     With a date+time from a schedule `chkNew' checks for broadcasts before
+     that date.  Without a date it checks for broadcasts before today.
+
+     Only the last earlier broadcast is shown.  The Beeb usually has them
+     in the correct order so it should be the most recent repeat.
+
+  Rationale
+  ---------
+     It is needed because:
+
+        1) at one stage, the Beeb had dropped nearly all the '(R)'
+           indicators it used to have in the Radio 4 schedule.
+
+        2) repeats are shown in the "Radio Times" and on the programme's
+           individual web page but are often unflagged in the shedule.
+
+  Examples
+  --------
+     $ chkNew m0000sdx 2018/10/21-20:00
+     Fri 19 Oct 2018 16:30 - BBC Radio 4
+     $ echo $?
+     1                         # repeat
+     $ chkNew b092m9j6
+     Sat 20 Oct 2018 15:30 - BBC Radio 4
+     $ chkNew https://www.bbc.co.uk/programmes/b080t87y
+     Fri 19 Oct 2018 14:15 - BBC Radio 4
+     $ chkNew b0bprgc2 
+     $ echo $?
+     0                         # NOT a repeat
+     $ chkNew b08tj4y1
+     Sun 26 May 2019 19:00 - BBC Radio 4 Extra
+     $ chkNew -s radio4 b08tj4y1
+     Sun 18 Jun 2017 23:00
+     $
+
+  Bugs
+  ----
+     email: peterscott@pobox.com
+'''
+
+import six, requests, re, sys, os, string, argparse
 from datetime import datetime 
 if six.PY3:
     from html.parser import HTMLParser
@@ -83,10 +166,10 @@ def usage():
 
 
 def getArgs():
-
   global NAME, USAGE, url, ourStation, ourTime
 
   class HelpAction( argparse.Action):
+      #
       # I don't like the (verbose) (GNU) standard help
       #
       def __call__( self, parser, namespace, values, option_string=None):
@@ -130,64 +213,15 @@ def getArgs():
 
 
 def reportExtraArgs( list):
-      extras = list    .pop(0)
-      if len( list    ) == 0:
+      extras = list.pop(0)
+      if len( list) == 0:
           ess = '\n'
       else:
           ess = 's\n'
-          while len( list    ) != 0:
-              extras = extras + ' ' + list    .pop(0)
+          while len( list) != 0:
+              extras = extras + ' ' + list.pop(0)
       errorMessage( extras + ': unexpected extra argument' + ess)
       usage()
-
-
-def getArgs2():
-  global NAME, url, ourStation, ourTime
-
-  NAME = os.path.basename( sys.argv.pop(0))
-
-  # deal with options
-  #
-  try:
-      opts, args = getopt.getopt( sys.argv[0:], 'hs:', ['help', 'station='])
-  except getopt.GetoptError as err:
-      errorMessage( err.msg)
-      exit( 3)
-  for opt, value in opts:
-          if opt in ( '-h', '--help'):
-              usage()
-          elif opt in ( '-s', '--station'):
-              ourStation = value
-              sys.argv.pop(0)
-              sys.argv.pop(0)
-
-  # get pid
-  #
-  if len( sys.argv) == 0:
-      errorMessage( 'no pid or url/pid supplied\n')
-      usage()
-  pid = sys.argv.pop(0)
-  if re.match( '.*/.*', pid):
-      url = pid
-  else:
-      if len( pid) != 8:
-          errorMessage( pid + ": isn't eight characters")
-          exit( 4)
-      url = 'http://www.bbc.co.uk/programmes/' + pid
-
-  # get optional scheduled time
-  #
-  if len( sys.argv) == 0:
-      return
-  ourTime = sys.argv.pop(0)
-  if len( sys.argv) != 0:
-      reportExtraArgs( sys.argv)
-  if not re.match( '^[0-9]{4}/[0-9]{2}/[0-9]{2}-[0-9]{2}:[0-9]{2}$', ourTime):
-      errorMessage( ourTime + ": isn't yyyy/mm/dd-hh:mm" )
-      exit( 5)
-  else:
-      ourTime = re.sub( '-', 'T', ourTime)
-      ourTime = re.sub( '/', '-', ourTime)
 
 
 NAME = ''        # globals
@@ -201,8 +235,6 @@ if __name__ == '__main__':
   parser = MyHTMLParser()
 
   getArgs()
-  exit( 0)
-
   try:
       page = requests.get( url)
       response = page.status_code
