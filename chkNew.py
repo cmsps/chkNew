@@ -17,7 +17,7 @@
  
   Version
   -------
-     Mon Jul 22 12:17:47 BST 2019
+     Mon Jul 22 12:29:58 BST 2019
  
   Copyright
   ---------
@@ -77,6 +77,15 @@
      $ chkNew -s radio4 b08tj4y1
      Sun 18 Jun 2017 23:00
      $
+
+  Notes:
+  ------
+     chkNew has been tested with Python 2.7 _and_ Python 3.7 and Linux.
+     It should run under Windoze -- getPids does.
+
+     To allow chkNew to run with Python 2.7 or Python 3 you need to
+     install the 'six.py' module (via pip).  You will also need 'requests'
+     and 'HTMLParser'.
 
   Bugs
   ----
