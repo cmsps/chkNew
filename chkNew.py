@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-  chkNew [ -s station ] [url]/PID [ time ] - check PID was NOT
+  chkNew [ -s station ] [url]/pid [ time ] - check pid was NOT
                                              broadcast before time
   Time is in getPids format: yyyy/mm/dd-hh:mm
   Station is also as in getPids, eg: bbcone, radio4.
@@ -17,7 +17,7 @@
  
   Version
   -------
-     Mon Jul 22 12:29:58 BST 2019
+     Fri Jul 26 15:11:27 BST 2019
  
   Copyright
   ---------
@@ -112,9 +112,10 @@ class MyHTMLParser( HTMLParser):
   def handle_starttag( self, tag, attrs):
     if tag == 'h2':
         self.step = 1
+    if self.step < 2:
+        return        # nothing to look at until we get 'Broadcasts' in an h2
 
-    # for all tags, examine the attributes and values and collect the
-    # relevant ones
+    # examine the attributes and values and collect the relevant ones
     #
     for n in range( 0, len( attrs)):
         attr  = attrs[n][0]
@@ -154,7 +155,7 @@ class MyHTMLParser( HTMLParser):
             if time < ourTime:
                 time = datetime.strptime( time, '%Y-%m-%dT%H:%M')
                 six.print_( time.strftime( '%a %d %b %Y %H:%M'), end='')
-                if ourStation:
+                if ourStation == '':
                     six.print_()
                 else:
                     six.print_( ' -', name)
@@ -223,11 +224,11 @@ def getArgs():
 
 def reportExtraArgs( list):
       extras = list.pop(0)
-      if len( list) == 0:
+      if not list:
           ess = '\n'
       else:
           ess = 's\n'
-          while len( list) != 0:
+          while list:
               extras = extras + ' ' + list.pop(0)
       errorMessage( extras + ': unexpected extra argument' + ess)
       usage()
