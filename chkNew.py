@@ -3,7 +3,9 @@
   chkNew [ -s station ] [url]/pid [ time ] - check pid was NOT
                                              broadcast before time
   Time is in getPids format: yyyy/mm/dd-hh:mm
-  Station is also as in getPids, eg: bbcone, radio4.
+
+  Station is as it is in the URL of station's home page,
+  eg: bbcone, radio4.
  
   Option:
           -s   look for repeats only on station
@@ -17,7 +19,7 @@
  
   Version
   -------
-     Fri Jul 26 15:11:27 BST 2019
+     Fri Sep 6 14:03:11 BST 2019
  
   Copyright
   ---------
@@ -72,11 +74,14 @@
      $ chkNew b0bprgc2 
      $ echo $?
      0                         # NOT a repeat
-     $ chkNew b08tj4y1
-     Sun 26 May 2019 19:00 - BBC Radio 4 Extra
+     $ chkNew -s radio4extra b08tj4y1
+     Sun 26 May 2019 19:00
      $ chkNew -s radio4 b08tj4y1
-     Sun 18 Jun 2017 23:00
+     Fri 07 Jun 2019 21:00
      $
+
+  The above output may be different in the future depending on broadcasts
+  after the revision date.
 
   Notes:
   ------
@@ -155,7 +160,7 @@ class MyHTMLParser( HTMLParser):
             if time < ourTime:
                 time = datetime.strptime( time, '%Y-%m-%dT%H:%M')
                 six.print_( time.strftime( '%a %d %b %Y %H:%M'), end='')
-                if ourStation == '':
+                if ourStation != '':
                     six.print_()
                 else:
                     six.print_( ' -', name)
@@ -200,7 +205,7 @@ def getArgs():
       reportExtraArgs( spareArgs)
 
   if args.station:
-      station = args.station
+      ourStation = args.station
 
   pid = args.pid
   if re.match( '.*/.*', pid):

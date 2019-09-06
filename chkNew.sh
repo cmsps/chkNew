@@ -3,7 +3,9 @@
 # chkNew [ -s station ] [url]/PID [ time ] - check PID was NOT
 #                                            broadcast before time
 #    Time is in getPids format: yyyy/mm/dd-hh:mm
-#    Station is also as in getPids, eg: bbcone, radio4.
+#
+#    Station is as it is in the URL of station's home page,
+#    eg: bbcone, radio4.
 #
 #    Option:
 #            -s   look for repeats only on station
@@ -15,7 +17,7 @@
 #    Displays:    date of most recent repeat, with the station unless the
 #                 -s option is used.
 #
-# Sun Jul 21 14:15:13 BST 2019
+# Fri Sep 6 14:15:39 BST 2019
 #
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
@@ -41,6 +43,12 @@ Purpose
    This script checks that a BBC programme is not a repeat.
    It works with TV and radio programmes.
 
+   With a date+time from a schedule `chkNew' checks for broadcasts before
+   that date.  Without a date it checks for broadcasts before today.
+
+   Only the last earlier broadcast is shown.  The Beeb usually has them
+   in the correct order so it should be the most recent repeat.
+
 Rationale
 ---------
    It is needed because:
@@ -51,30 +59,28 @@ Rationale
       2) repeats are shown in the "Radio Times" and on the programme's
          individual web page but are often unflagged in the shedule.
 
-   With a date+time from a schedule `chkNew' checks for broadcasts before
-   that date.  Without a date it checks for broadcasts before today.
-
-   Only the last earlier broadcast is shown.  The Beeb usually has them
-   in the correct order so it should be the most recent repeat.
 
 Examples
 --------
-   $ chkNew m0000sdx 2018/10/21-20:00
-   Fri 19 Oct 2018 16:30 - BBC Radio 4
-   $ echo $?
-   1                         # repeat
-   $ chkNew b092m9j6
-   Sat 20 Oct 2018 15:30 - BBC Radio 4
-   $ chkNew https://www.bbc.co.uk/programmes/b080t87y
-   Fri 19 Oct 2018 14:15 - BBC Radio 4
-   $ chkNew b0bprgc2 
-   $ echo $?
-   0                         # NOT a repeat
-   $ chkNew b08tj4y1
-   Sun 26 May 2019 19:00 - BBC Radio 4 Extra
-   $ chkNew -s radio4 b08tj4y1
-   Sun 18 Jun 2017 23:00
-   $
+     $ chkNew m0000sdx 2018/10/21-20:00
+     Fri 19 Oct 2018 16:30 - BBC Radio 4
+     $ echo $?
+     1                         # repeat
+     $ chkNew b092m9j6
+     Sat 20 Oct 2018 15:30 - BBC Radio 4
+     $ chkNew https://www.bbc.co.uk/programmes/b080t87y
+     Fri 19 Oct 2018 14:15 - BBC Radio 4
+     $ chkNew b0bprgc2 
+     $ echo $?
+     0                         # NOT a repeat
+     $ chkNew -s radio4extra b08tj4y1
+     Sun 26 May 2019 19:00
+     $ chkNew -s radio4 b08tj4y1
+     Fri 07 Jun 2019 21:00
+     $
+
+   The above output may be different in the future depending on broadcasts
+   after the revision date.
 
 Bugs
 ----
