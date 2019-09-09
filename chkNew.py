@@ -2,28 +2,25 @@
 '''
   chkNew [ -s station ] [url]/pid [ time ] - check pid was NOT
                                              broadcast before time
-  Time is in getPids format: yyyy/mm/dd-hh:mm
 
-  Station is as it is in the URL of station's home page,
-  eg: bbcone, radio4.
- 
+       time is in getPids format: yyyy/mm/dd-hh:mm
+
+       station is as it is in the URL of station's home page,
+       eg: bbcone, radio4.
+
   Option:
           -s   look for repeats only on station
- 
+
   Returns: 0   new programme
            1   repeat
            2+  problem
- 
+
   Displays:    date of most recent repeat, with the station unless the
                -s option is used.
- 
-  Version
-  -------
-     Fri Sep 6 14:03:11 BST 2019
- 
-  Copyright
-  ---------
-     Copyright (C) 2019 Peter Scott - peterscott@pobox.com
+
+  Version: Mon Sep 9 12:49:06 BST 2019
+
+  Copyright (C) 2019 Peter Scott - peterscott@pobox.com
 
   Licence
   -------
@@ -71,7 +68,7 @@
      Sat 20 Oct 2018 15:30 - BBC Radio 4
      $ chkNew https://www.bbc.co.uk/programmes/b080t87y
      Fri 19 Oct 2018 14:15 - BBC Radio 4
-     $ chkNew b0bprgc2 
+     $ chkNew b0bprgc2
      $ echo $?
      0                         # NOT a repeat
      $ chkNew -s radio4extra b08tj4y1
@@ -98,7 +95,7 @@
 '''
 
 import six, requests, re, sys, os, string, argparse
-from datetime import datetime 
+from datetime import datetime
 if six.PY3:
     from html.parser import HTMLParser
 else:
@@ -160,7 +157,7 @@ class MyHTMLParser( HTMLParser):
             if time < ourTime:
                 time = datetime.strptime( time, '%Y-%m-%dT%H:%M')
                 six.print_( time.strftime( '%a %d %b %Y %H:%M'), end='')
-                if ourStation != '':
+                if ourStation:
                     six.print_()
                 else:
                     six.print_( ' -', name)
@@ -201,7 +198,7 @@ def getArgs():
   parser.add_argument( 'time', nargs='?')
   args, spareArgs = parser.parse_known_args()
 
-  if len( spareArgs) != 0:
+  if len( spareArgs):
       reportExtraArgs( spareArgs)
 
   if args.station:
@@ -222,21 +219,20 @@ def getArgs():
                                                                       ourTime):
           errorMessage( ourTime + ": time isn't yyyy/mm/dd-hh:mm" )
           exit( 5)
-      else:
-          ourTime = re.sub( '-', 'T', ourTime)
-          ourTime = re.sub( '/', '-', ourTime)
+      ourTime = re.sub( '-', 'T', ourTime)
+      ourTime = re.sub( '/', '-', ourTime)
 
 
 def reportExtraArgs( list):
-      extras = list.pop(0)
-      if not list:
-          ess = '\n'
-      else:
-          ess = 's\n'
-          while list:
-              extras = extras + ' ' + list.pop(0)
-      errorMessage( extras + ': unexpected extra argument' + ess)
-      usage()
+  extras = list.pop(0)
+  if not list:
+      ess = '\n'
+  else:
+      ess = 's\n'
+      while list:
+          extras = extras + ' ' + list.pop(0)
+  errorMessage( extras + ': unexpected extra argument' + ess)
+  usage()
 
 
 NAME = ''        # globals

@@ -1,67 +1,70 @@
 #!/bin/sh
-#
-# chkNew [ -s station ] [url]/PID [ time ] - check PID was NOT
-#                                            broadcast before time
-#    Time is in getPids format: yyyy/mm/dd-hh:mm
-#
-#    Station is as it is in the URL of station's home page,
-#    eg: bbcone, radio4.
-#
-#    Option:
-#            -s   look for repeats only on station
-#
-#    Returns: 0   new programme
-#             1   repeat
-#             2+  problem
-#
-#    Displays:    date of most recent repeat, with the station unless the
-#                 -s option is used.
-#
-# Fri Sep 6 14:15:39 BST 2019
-#
 <<'______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________'
 
-Copyright (C) 2019 Peter Scott - peterscott@pobox.com
+  chkNew [ -s station ] [url]/pid [ time ] - check pid was NOT
+                                             broadcast before time
 
-Licence
--------
-   This program is free software: you can redistribute it and / or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
+       time is in getPids format: yyyy/mm/dd-hh:mm
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+       station is as it is in the URL of station's home page,
+       eg: bbcone, radio4.
 
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  Option:
+          -s   look for repeats only on station
 
-Purpose
--------
-   This script checks that a BBC programme is not a repeat.
-   It works with TV and radio programmes.
+  Returns: 0   new programme
+           1   repeat
+           2+  problem
 
-   With a date+time from a schedule `chkNew' checks for broadcasts before
-   that date.  Without a date it checks for broadcasts before today.
+  Displays:    date of most recent repeat, with the station unless the
+               -s option is used.
 
-   Only the last earlier broadcast is shown.  The Beeb usually has them
-   in the correct order so it should be the most recent repeat.
+  Version
+  -------
+      Mon Sep 9 12:31:44 BST 2019
 
-Rationale
----------
-   It is needed because:
+  Copyright
+  ---------
+     Copyright (C) 2019 Peter Scott - peterscott@pobox.com
 
-      1) at one stage, the Beeb has dropped nearly all the '(R)'
-         indicators it used to have in the Radio 4 schedule.
+  Licence
+  -------
+     This program is free software: you can redistribute it and / or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
 
-      2) repeats are shown in the "Radio Times" and on the programme's
-         individual web page but are often unflagged in the shedule.
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
 
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Examples
---------
+  Purpose
+  -------
+     This script checks that a BBC programme is not a repeat.
+     It works with TV and radio programmes.
+
+     With a date+time from a schedule `chkNew' checks for broadcasts before
+     that date.  Without a date it checks for broadcasts before today.
+
+     Only the last earlier broadcast is shown.  The Beeb usually has them
+     in the correct order so it should be the most recent repeat.
+
+  Rationale
+  ---------
+     It is needed because:
+
+        1) at one stage, the Beeb had dropped nearly all the '(R)'
+           indicators it used to have in the Radio 4 schedule.
+
+        2) repeats are shown in the "Radio Times" and on the programme's
+           individual web page but are often unflagged in the shedule.
+
+  Examples
+  --------
      $ chkNew m0000sdx 2018/10/21-20:00
      Fri 19 Oct 2018 16:30 - BBC Radio 4
      $ echo $?
@@ -70,7 +73,7 @@ Examples
      Sat 20 Oct 2018 15:30 - BBC Radio 4
      $ chkNew https://www.bbc.co.uk/programmes/b080t87y
      Fri 19 Oct 2018 14:15 - BBC Radio 4
-     $ chkNew b0bprgc2 
+     $ chkNew b0bprgc2
      $ echo $?
      0                         # NOT a repeat
      $ chkNew -s radio4extra b08tj4y1
@@ -79,12 +82,12 @@ Examples
      Fri 07 Jun 2019 21:00
      $
 
-   The above output may be different in the future depending on broadcasts
-   after the revision date.
+  The above output may be different in the future depending on broadcasts
+  after the revision date.
 
-Bugs
-----
-   email: peterscott@pobox.com
+  Bugs
+  ----
+     email: peterscott@pobox.com
 
 ______________D__O__C__U__M__E__N__T__A__T__I__O__N_____________
 
