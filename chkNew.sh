@@ -25,7 +25,7 @@
 
   Copyright
   ---------
-     Copyright (C) 2019 Peter Scott - peterscott@pobox.com
+     Copyright (C) 2020 Peter Scott - peterscott@pobox.com
 
   Licence
   -------
