@@ -5,8 +5,11 @@
 
        time is in getPids format: yyyy/mm/dd-hh:mm
 
-       station is as it is in the URL of station's home page,
-       eg: bbcone, radio4.
+       station is as it is in the URL of station's .png logos,
+       except that the superflous "bbc_" is removed from the start of
+       radio station names.
+
+       eg: bbc_one, radio_four, radio_four_extra, bbc_alba.
 
   Option:
           -s   look for repeats only on station
@@ -15,10 +18,11 @@
            1   repeat
            2+  problem
 
-  Displays:    date of most recent repeat, with the station unless the
-               -s option is used.
+  Displays:    date of most recent repeat with the station
+               (the station is omitted if the -s option was used)
 
-  Version: Mon Sep 9 12:49:06 BST 2019
+
+  Version: Mon May 18 15:10:45 BST 2020
 
   Copyright (C) 2020 Peter Scott - peterscott@pobox.com
 
@@ -122,13 +126,15 @@ class MyHTMLParser( HTMLParser):
     for n in range( 0, len( attrs)):
         attr  = attrs[n][0]
         value = attrs[n][1]
-        if self.step == 2 and attr == 'datatype':
+        if self.step == 2 and attr == 'src':
+            self.station = re.sub( '.*/', '', value, 1)
+            self.station = re.sub( 'bbc_radio', 'radio', self.station, 1)
+            self.station = re.sub( '-.*\.png', '', self.station, 1)
             self.step = 3
-        elif self.step == 3:
+        elif self.step == 3 and attr == 'content':
             self.time = value
             self.step = 4
-        elif self.step == 4 and attr == 'href':
-            self.station = re.sub( '.*/', '', value, 1)
+        elif self.step == 4 and attr == 'class' and 'programme_' in value:
             self.step = 5
 
 
