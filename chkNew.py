@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-  chkNew [ -s station ] [url]/pid [ time ] - check pid was NOT
+  chkNew [ -s station ] [url/]pid [ time ] - check pid was NOT
                                              broadcast before time
 
        time is in getPids format: yyyy/mm/dd-hh:mm
@@ -22,7 +22,7 @@
                (the station is omitted if the -s option was used)
 
 
-  Version: Mon May 18 15:10:45 BST 2020
+  Version: Tue May 19 12:51:56 BST 2020
 
   Copyright (C) 2020 Peter Scott - peterscott@pobox.com
 
@@ -56,8 +56,8 @@
   ---------
      It is needed because:
 
-        1) at one stage, the Beeb had dropped nearly all the '(R)'
-           indicators it used to have in the Radio 4 schedule.
+        1) the Beeb had dropped nearly all the '(R)' indicators it used
+           to have in the Radio 4 schedule;
 
         2) repeats are shown in the "Radio Times" and on the programme's
            individual web page but are often unflagged in the shedule.
@@ -75,9 +75,9 @@
      $ chkNew b0bprgc2
      $ echo $?
      0                         # NOT a repeat
-     $ chkNew -s radio4extra b08tj4y1
+     $ chkNew -s radio_four_extra b08tj4y1
      Sun 26 May 2019 19:00
-     $ chkNew -s radio4 b08tj4y1
+     $ chkNew -s radio_four b08tj4y1
      Fri 07 Jun 2019 21:00
      $
 
