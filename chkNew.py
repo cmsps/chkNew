@@ -5,7 +5,7 @@
 
        time is in getPids format: yyyy/mm/dd-hh:mm
 
-       station is as it is in the URL of station's .png logos,
+       station is as it is in the URL of station's .svg logos,
        except that the superflous "bbc_" is removed from the start of
        radio station names.
 
@@ -22,7 +22,7 @@
                (the station is omitted if the -s option was used)
 
 
-  Version: Tue May 19 12:51:56 BST 2020
+  Version: Mon Nov 30 12:45:56 GMT 2020
 
   Copyright (C) 2020 Peter Scott - peterscott@pobox.com
 
@@ -127,9 +127,9 @@ class MyHTMLParser( HTMLParser):
         attr  = attrs[n][0]
         value = attrs[n][1]
         if self.step == 2 and attr == 'src':
-            self.station = re.sub( '.*/', '', value, 1)
+            self.station = re.sub( '.*/svg/', '', value, 1)
             self.station = re.sub( 'bbc_radio', 'radio', self.station, 1)
-            self.station = re.sub( '-.*\.png', '', self.station, 1)
+            self.station = re.sub( '/.*', '', self.station, 1)
             self.step = 3
         elif self.step == 3 and attr == 'content':
             self.time = value
