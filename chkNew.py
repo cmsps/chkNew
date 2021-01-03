@@ -24,7 +24,7 @@
 
   Version: Mon Nov 30 12:45:56 GMT 2020
 
-  Copyright (C) 2020 Peter Scott - peterscott@pobox.com
+  Copyright (C) 2021 Peter Scott - peterscott@pobox.com
 
   Licence
   -------
