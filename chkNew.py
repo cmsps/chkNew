@@ -5,9 +5,9 @@
 
        time is in getPids format: yyyy/mm/dd-hh:mm
 
-       station is as it is in the URL of station's .svg logos,
-       except that the superflous "bbc_" is removed from the start of
-       radio station names.
+       station is as it is in the URL of station's .svg logo, except
+       that the superflous "bbc_" is removed from the start of radio
+       station names.
 
        eg: bbc_one, radio_four, radio_four_extra, bbc_alba.
 
@@ -22,7 +22,7 @@
                (the station is omitted if the -s option was used)
 
 
-  Version: Mon Nov 30 12:45:56 GMT 2020
+  Version: Tue May 4 11:25:49 BST 2021
 
   Copyright (C) 2021 Peter Scott - peterscott@pobox.com
 
