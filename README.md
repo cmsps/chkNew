@@ -25,6 +25,13 @@ It works with TV and radio programmes.
     Tue 1 Nov 2016 14:15 - BBC Radio 4  
     $
 
+    $ chkNew  m000k26j
+    Sun 17 Apr 2022 17:00 - BBC Radio 3
+    $ chkNew -s radio_three m000k26j
+    Sun 17 Apr 2022 17:00
+    $ chkNew -s radio_four m000k26j
+    $ 
+
     $ chkNew b0bprgc2   
     $ echo $?  
     0                         # NOT a repeat  
