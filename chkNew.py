@@ -22,7 +22,7 @@
                (the station is omitted if the -s option was used)
 
 
-  Version: Sun Aug 1 13:07:48 BST 2021
+  Version: Thu Apr 13 17:18:53 BST 2023
 
   Copyright (C) 2023 Peter Scott - peterscott@pobox.com
 
@@ -119,7 +119,8 @@ class MyHTMLParser( HTMLParser):
     if tag == 'h2':
         self.step = 1
     if self.step < 2:
-        return        # nothing to look at until we get 'Broadcasts' in an h2
+        return        # nothing to look at until we get
+                      # 'Broadcast' or 'Broadcasts' in an h2
 
     # examine the attributes and values and collect the relevant ones
     #
@@ -140,7 +141,9 @@ class MyHTMLParser( HTMLParser):
 
   def handle_data( self, data):
     if self.step == 1:
-        if data == 'Broadcasts':
+        if data == 'Broadcast':
+            exit( 0)           # not a repeat and it is a valid programme page
+        elif data == 'Broadcasts':
             self.step = 2
         else:
             self.step = 0      # wait for our <h2>
@@ -168,7 +171,7 @@ class MyHTMLParser( HTMLParser):
                 else:
                     six.print_( ' -', name)
                 exit( 1)             # a repeat
-        exit( 0)                     # repeats - but none met our criteria
+        exit( 0)                     # repeats - but not the station specified
 
 
 def errorMessage( message):
@@ -264,4 +267,6 @@ if __name__ == '__main__':
       error = "couldn't get: " + url
       errorMessage( error)
       exit( 7)
-  exit( 0)                               # no Broadcasts section!
+
+  errorMessage( "no Broadcast or Broadcasts header in page")
+  exit( 8)
