@@ -22,7 +22,7 @@
                (the station is omitted if the -s option was used)
 
 
-  Version: Thu Apr 13 17:20:09 BST 2023
+  Version: Fri Apr 14 12:39:53 BST 2023
 
   Copyright (C) 2023 Peter Scott - peterscott@pobox.com
 
@@ -261,5 +261,5 @@ if __name__ == '__main__':
       errorMessage( error)
       exit( 7)
 
-  errorMessage( "no Broadcast or Broadcasts header in page")
+  errorMessage( 'no "Broadcast" or "Broadcasts" heading in web page')
   exit( 8)
