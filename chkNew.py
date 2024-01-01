@@ -24,7 +24,7 @@
 
   Version: Fri Apr 14 12:41:13 BST 2023
 
-  Copyright (C) 2023 Peter Scott - peterscott@pobox.com
+  Copyright (C) 2024 Peter Scott - peterscott@pobox.com
 
   Licence
   -------
