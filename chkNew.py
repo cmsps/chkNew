@@ -22,7 +22,7 @@
                (the station is omitted if the -s option was used)
 
 
-  Version: Fri Apr 14 12:41:13 BST 2023
+  Version: Tue Apr 30 12:51:02 BST 2024
 
   Copyright (C) 2024 Peter Scott - peterscott@pobox.com
 
@@ -162,7 +162,7 @@ class MyHTMLParser( HTMLParser):
         for n in range( 0, len( self.broadcasts)):
             broadcast = self.broadcasts.pop( len( self.broadcasts) - 1)
             (time, station, name) = broadcast
-            time = re.sub( ':00\+0[01]:00', '', time, 1)
+            time = re.sub( r':00\+0[01]:00', '', time, 1)
             if time < ourTime:
                 time = datetime.strptime( time, '%Y-%m-%dT%H:%M')
                 six.print_( time.strftime( '%a %d %b %Y %H:%M'), end='')
