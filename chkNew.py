@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
   chkNew [ -s station ] [url/]pid [ time ] - check pid was NOT
                                              broadcast before time
@@ -22,7 +22,7 @@
                (the station is omitted if the -s option was used)
 
 
-  Version: Tue Apr 30 12:51:02 BST 2024
+  Version: Mon May 19 13:14:34 BST 2025
 
   Copyright (C) 2025 Peter Scott - peterscott@pobox.com
 
@@ -81,29 +81,22 @@
      Fri 07 Jun 2019 21:00
      $
 
-  The above output may be different in the future depending on broadcasts
-  after the revision date.
+  The above output may be different in the future depending on further
+  broadcasts
 
   Notes:
   ------
-     chkNew has been tested with Python 2.7 _and_ Python 3.7 and Linux.
-     It should run under Windoze -- getPids does.
-
-     To allow chkNew to run with Python 2.7 or Python 3 you need to
-     install the 'six.py' module (via pip).  You will also need 'requests'
-     and 'HTMLParser'.
+  If your installation doesn't have them, you will need to install
+  'requests' and 'HTMLParser' (via pip.)
 
   Bugs
   ----
      email: peterscott@pobox.com
 '''
 
-import six, requests, re, sys, os, string, argparse
+import requests, re, sys, os, string, argparse
 from datetime import datetime
-if six.PY3:
-    from html.parser import HTMLParser
-else:
-    from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 
 class MyHTMLParser( HTMLParser):
   def __init__( self):
@@ -128,9 +121,9 @@ class MyHTMLParser( HTMLParser):
         attr  = attrs[n][0]
         value = attrs[n][1]
         if self.step == 2 and attr == 'src':
-            self.station = re.sub( '.*/svg/', '', value, 1)
-            self.station = re.sub( 'bbc_radio', 'radio', self.station, 1)
-            self.station = re.sub( '/.*', '', self.station, 1)
+            self.station = re.sub( '.*/svg/', '', value, count=1)
+            self.station = re.sub( 'bbc_radio', 'radio', self.station, count=1)
+            self.station = re.sub( '/.*', '', self.station, count=1)
             self.step = 3
         elif self.step == 3 and attr == 'content':
             self.time = value
@@ -162,14 +155,14 @@ class MyHTMLParser( HTMLParser):
         for n in range( 0, len( self.broadcasts)):
             broadcast = self.broadcasts.pop( len( self.broadcasts) - 1)
             (time, station, name) = broadcast
-            time = re.sub( r':00\+0[01]:00', '', time, 1)
+            time = re.sub( r':00\+0[01]:00', '', time, count=1)
             if time < ourTime:
                 time = datetime.strptime( time, '%Y-%m-%dT%H:%M')
-                six.print_( time.strftime( '%a %d %b %Y %H:%M'), end='')
+                print( time.strftime( '%a %d %b %Y %H:%M'), end='')
                 if ourStation:
-                    six.print_()
+                    print()
                 else:
-                    six.print_( ' -', name)
+                    print( ' -', name)
                 exit( 1)             # a repeat
         exit( 0)                     # repeats - but not the station specified
 
